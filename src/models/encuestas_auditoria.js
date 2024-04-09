@@ -29,7 +29,7 @@ module.exports = (sequelize, DataType) => {
       },
       pregunta6: {
         type: DataType.STRING,
-        allowNull: false
+        allowNull: true
       },
       pregunta7: {
         type: DataType.STRING,
@@ -49,11 +49,11 @@ module.exports = (sequelize, DataType) => {
       },
       pregunta11: {
         type: DataType.STRING,
-        allowNull: false
+        allowNull: true
       },
       pregunta12: {
         type: DataType.STRING,
-        allowNull: false
+        allowNull: true
       },
       pregunta13: {
         type: DataType.STRING,
@@ -61,11 +61,11 @@ module.exports = (sequelize, DataType) => {
       },
       pregunta14: {
         type: DataType.STRING,
-        allowNull: false
+        allowNull: true
       },
       pregunta15: {
         type: DataType.STRING,
-        allowNull: false
+        allowNull: true
       },
       pregunta16: {
         type: DataType.STRING,
