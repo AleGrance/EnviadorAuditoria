@@ -6,7 +6,7 @@ const axios = require("axios");
 // Conexion con MSSQL
 import sql from "mssql";
 // Datos de la conexion MSSQL
-import { mssql } from "../libs/config";
+import { mssql, poolPromise } from "../libs/config";
 
 // Var para la conexion a WWA Free
 const wwaUrl = "http://localhost:3001/lead";
@@ -83,39 +83,53 @@ module.exports = (app) => {
 
     // Conexión
     try {
-      const pool = await sql.connect(mssql);
+      //const pool = await sql.connect(mssql); //Anteriormente utilizada para conectar sólo con los parametros
+      setTimeout(async () => {
+        const pool = await poolPromise;
+        const result = await pool.request().query(`SELECT * FROM Solicitudes
+        WHERE solFaseID = 1012
+        AND solmosID in (45,52)
+        AND solTipoProductoID = 4`);
 
-      // Consulta
-      const result = await pool.request().query(`SELECT * FROM Solicitudes
-      WHERE solFaseID = 1012
-      AND solmosID in (45,52)
-      AND solTipoProductoID = 4`);
-      //console.log("RESULTADO DE LA CONSULTA:", result);
+        console.log("Result:", result.recordset.length);
 
-      const registrosObtenidos = result.recordset;
-      const codigoPais = "595";
+        const registrosObtenidos = result.recordset;
+        const codigoPais = "595";
 
-      registrosObtenidos.forEach((element) => {
-        let e = {
-          NRO_DOCUMENTO: element.solCI,
-          NOMBRE: element.solNombres,
-          APELLIDO: element.solApellidos,
-          RUC: element.solruc,
-          TELEFONO_UNO:
-            element.solTel1.length == 10 ? element.solTel1.replace("0", codigoPais) : null,
-          TELEFONO_DOS:
-            element.solTel2.length == 10 ? element.solTel2.replace("0", codigoPais) : null,
-          TELEFONO_TRES:
-            element.solCel1.length == 10 ? element.solCel1.replace("0", codigoPais) : null,
-        };
+        registrosObtenidos.forEach((element) => {
+          let e = {
+            NRO_DOCUMENTO: element.solCI,
+            NOMBRE: element.solNombres,
+            APELLIDO: element.solApellidos,
+            RUC: element.solruc,
+            TELEFONO_UNO:
+              element.solTel1.length == 10 ? element.solTel1.replace("0", codigoPais) : null,
+            TELEFONO_DOS:
+              element.solTel2.length == 10 ? element.solTel2.replace("0", codigoPais) : null,
+            TELEFONO_TRES:
+              element.solCel1.length == 10 ? element.solCel1.replace("0", codigoPais) : null,
+          };
 
-        // Poblar PGSQL
-        Clientes_auditoria.create(e)
-          //.then((result) => res.json(result))
-          .catch((error) => console.log(error.message));
-      });
+          // Para test
+          // let e = {
+          //   NRO_DOCUMENTO: element.solCI,
+          //   NOMBRE: element.solNombres,
+          //   APELLIDO: element.solApellidos,
+          //   RUC: element.solruc,
+          //   TELEFONO_DOS: 595986153301,
+          // };
+
+          // Poblar PGSQL
+          Clientes_auditoria.create(e)
+            //.then((result) => res.json(result))
+            .catch((error) => console.log(error.message));
+        });
+
+        iniciarEnvio();
+      }, 6000);
     } catch (error) {
       console.log("Error en conexión SQL: ", { msg: error.code });
+      console.log(error);
       tryAgain();
     }
   }
@@ -125,6 +139,7 @@ module.exports = (app) => {
   // Inicia los envios - Consulta al PGSQL
   let losRegistros = [];
   function iniciarEnvio() {
+    console.log('Los envios iniciaran en 1 min...')
     setTimeout(() => {
       Clientes_auditoria.findAll({
         where: { estado_envio: 0 },
@@ -174,7 +189,9 @@ Para cualquier consulta que tengas, por favor, añádenos en tus contactos al 02
 
           const dataBody = {
             message: mensajeCompleto,
-            phone: losRegistros[i].TELEFONO_DOS ? losRegistros[i].TELEFONO_DOS : losRegistros[i].TELEFONO_TRES,
+            phone: losRegistros[i].TELEFONO_DOS
+              ? losRegistros[i].TELEFONO_DOS
+              : losRegistros[i].TELEFONO_TRES,
             mimeType: fileMimeTypeMedia,
             data: fileBase64Media,
             fileName: "",
@@ -250,8 +267,8 @@ Para cualquier consulta que tengas, por favor, añádenos en tus contactos al 02
             console.error("La solicitud tardó demasiado y se canceló", error.code);
             notificarSesionOff("Error02 de conexión con la API: " + error.code);
           } else {
-            console.error("Error de conexión con la API: ", error);
-            notificarSesionOff("Error02 de conexión con la API: " + error);
+            console.error("Error de conexión con la API: ", error.code);
+            notificarSesionOff("Error02 de conexión con la API: " + error.code);
           }
           // Lanzar una excepción para detener el bucle
           losRegistros = [];

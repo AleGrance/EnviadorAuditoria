@@ -1,5 +1,8 @@
+// Conexion con MSSQL
+import sql from "mssql";
+
+// PostgreSQL
 const postgres = {
-  // PostgreSQL
   database: process.env.PG_DB,
   username: process.env.PG_USER,
   password: process.env.PG_PWD,
@@ -29,4 +32,25 @@ const mssql = {
   },
 };
 
-export {postgres, mssql}
+let poolPromise;
+async function connectWithRetry() {
+  while (true) {
+    try {
+      poolPromise = await sql.connect(mssql);
+      console.log("Conexión exitosa a la base de datos");
+      return poolPromise;
+    } catch (err) {
+      console.error("Error al conectar a la base de datos:", {error: err.message});
+      console.log("Reintentando conexión en 10 segundos...");
+      await new Promise((resolve) => setTimeout(resolve, 10000)); // Esperar 1 minuto antes de reintentar
+    }
+  }
+}
+
+// Llamar a la función connectWithRetry para establecer la conexión
+connectWithRetry().catch((err) => {
+  console.error("No se pudo establecer la conexión:", err.message);
+  process.exit(1); // Salir de la aplicación en caso de error grave
+});
+
+export {postgres, mssql, poolPromise}
