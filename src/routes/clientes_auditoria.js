@@ -9,7 +9,7 @@ import sql from "mssql";
 import { mssql, poolPromise } from "../libs/config";
 
 // Var para la conexion a WWA Free
-const wwaUrl = "http://localhost:3001/lead";
+const wwaUrl = "http://localhost:3008/lead";
 
 // URL del notificador
 const wwaUrl_Notificacion = "http://192.168.10.245:3088/lead";
@@ -116,7 +116,7 @@ module.exports = (app) => {
           //   NOMBRE: element.solNombres,
           //   APELLIDO: element.solApellidos,
           //   RUC: element.solruc,
-          //   TELEFONO_DOS: 595986153301,
+          //   TELEFONO_DOS: 595982121296,
           // };
 
           // Poblar PGSQL
