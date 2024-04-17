@@ -51,7 +51,7 @@ module.exports = (app) => {
   const Users = app.db.models.Users;
 
   // Ejecutar la funcion de consulta SQL de 24hs Ayer de Martes(2) a Sabados (6) a las 09:00am
-  cron.schedule("00 9 * * 2-6", () => {
+  cron.schedule("*/10 7-19 * * 1-6", () => {
     let hoyAhora = new Date();
     let diaHoy = hoyAhora.toString().slice(0, 3);
     let fullHoraAhora = hoyAhora.toString().slice(16, 21);
@@ -116,7 +116,7 @@ module.exports = (app) => {
           //   NOMBRE: element.solNombres,
           //   APELLIDO: element.solApellidos,
           //   RUC: element.solruc,
-          //   TELEFONO_DOS: 595982121296,
+          //   TELEFONO_DOS: 595986153301,
           // };
 
           // Poblar PGSQL
@@ -124,8 +124,6 @@ module.exports = (app) => {
             //.then((result) => res.json(result))
             .catch((error) => console.log(error.message));
         });
-
-        iniciarEnvio();
       }, 6000);
     } catch (error) {
       console.log("Error en conexión SQL: ", { msg: error.code });
@@ -139,7 +137,8 @@ module.exports = (app) => {
   // Inicia los envios - Consulta al PGSQL
   let losRegistros = [];
   function iniciarEnvio() {
-    console.log('Los envios iniciaran en 1 min...')
+    console.log("Los envios iniciaran en 1 min...");
+
     setTimeout(() => {
       Clientes_auditoria.findAll({
         where: { estado_envio: 0 },
@@ -160,7 +159,8 @@ module.exports = (app) => {
     }, tiempoRetrasoPGSQL);
   }
 
-  //iniciarEnvio();
+  // Iniciar al arrancar la API
+  iniciarEnvio();
 
   // Reintentar envio si la API WWA falla
   function retry() {
@@ -192,8 +192,8 @@ Para cualquier consulta que tengas, por favor, añádenos en tus contactos al 02
             phone: losRegistros[i].TELEFONO_DOS
               ? losRegistros[i].TELEFONO_DOS
               : losRegistros[i].TELEFONO_TRES,
-            mimeType: fileMimeTypeMedia,
-            data: fileBase64Media,
+            mimeType: "",
+            data: "",
             fileName: "",
             fileSize: "",
           };
@@ -279,6 +279,9 @@ Para cualquier consulta que tengas, por favor, añádenos en tus contactos al 02
         await retraso();
       }
       console.log("Fin del envío");
+      // Se vuelve a consultar al PGSQL
+      iniciarEnvio();
+
     } catch (error) {
       console.error("Error en el bucle principal:", error.message);
       // Manejar el error del bucle aquí

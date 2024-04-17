@@ -30,6 +30,7 @@ module.exports = (app) => {
               model: Clientes_auditoria,
             },
           ],
+          order: [['createdAt', 'DESC']]
         })
           .then((result) => res.json(result))
           .catch((error) => {
@@ -146,7 +147,7 @@ module.exports = (app) => {
             model: Clientes_auditoria,
           },
         ],
-        //order: [["createdAt", "DESC"]],
+        order: [["createdAt", "DESC"]],
       })
         .then((result) => res.json(result))
         .catch((error) => {
