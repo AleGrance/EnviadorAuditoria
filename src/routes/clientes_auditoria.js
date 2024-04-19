@@ -21,22 +21,22 @@ let fileBase64Media = "";
 let mensajeBody = "";
 
 // Ruta de la imagen JPEG
-const imagePath = path.join(__dirname, "..", "img", "img.jpeg");
+//const imagePath = path.join(__dirname, "..", "img", "img.jpeg");
 // Leer el contenido de la imagen como un buffer
-const imageBuffer = fs.readFileSync(imagePath);
+//const imageBuffer = fs.readFileSync(imagePath);
 // Convertir el buffer a base64
-const base64String = imageBuffer.toString("base64");
+//const base64String = imageBuffer.toString("base64");
 // Mapear la extensión de archivo a un tipo de archivo
-const fileExtension = path.extname(imagePath);
-const fileType = {
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".png": "image/png",
-}[fileExtension.toLowerCase()];
+//const fileExtension = path.extname(imagePath);
+// const fileType = {
+//   ".jpg": "image/jpeg",
+//   ".jpeg": "image/jpeg",
+//   ".png": "image/png",
+// }[fileExtension.toLowerCase()];
 
-fileMimeTypeMedia = fileType;
+//fileMimeTypeMedia = fileType;
 // El split esta al pedo
-fileBase64Media = base64String.split(",")[0];
+//fileBase64Media = base64String.split(",")[0];
 
 // Tiempo de retraso de consulta al PGSQL para iniciar el envio. 1 minuto
 var tiempoRetrasoPGSQL = 1000 * 60;
@@ -182,7 +182,8 @@ module.exports = (app) => {
           const mensajeCompleto = `Hola 😁 Sr/a ${losRegistros[i].NOMBRE}
 *¡Desde Odontos queremos darle la Bienvenida y confirmar sus datos!*
 
-Ingrese al link para completar su encuesta https://encuestas.odontos.com.py/encuesta-app/bienvenida/${losRegistros[i].NRO_DOCUMENTO}
+*Ingrese al link para activar su PLAN* 👉 https://encuestas.odontos.com.py/encuesta-app/bienvenida/${losRegistros[i].NRO_DOCUMENTO}
+Favor al finalizar presionar en la opción *ENVIAR*.
 
 Para cualquier consulta que tengas, por favor, añádenos en tus contactos al 0214129000 Servicio de atención al cliente vía WhatsApp y llamada.       
 `;
