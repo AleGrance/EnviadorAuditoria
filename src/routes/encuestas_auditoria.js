@@ -1,6 +1,7 @@
 const cron = require("node-cron");
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 const apiKey = "WLZn19UEPUu4EcDUxE94WO9KnjsjVuaX";
+const moment = require("moment");
 
 module.exports = (app) => {
   const Encuestas_auditoria = app.db.models.Encuestas_auditoria;

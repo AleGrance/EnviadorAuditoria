@@ -50,7 +50,7 @@ module.exports = (app) => {
   const Clientes_auditoria = app.db.models.Clientes_auditoria;
   const Users = app.db.models.Users;
 
-  // Ejecutar la funcion de consulta SQL de 24hs Ayer de Martes(2) a Sabados (6) a las 09:00am
+  // Ejecutar la funcion de consulta SQL Lunes(2) a Sabados (6) cada 10 min de 07:00 a 20:00
   cron.schedule("*/10 7-19 * * 1-6", () => {
     let hoyAhora = new Date();
     let diaHoy = hoyAhora.toString().slice(0, 3);
@@ -399,31 +399,31 @@ ${error}`,
   //     });
   // });
 
-  // // Trae los turnos que ya fueron notificados hoy
-  // app.route("/Clientes_auditoriaNotificados").get((req, res) => {
-  //   // Fecha de hoy 2022-02-30
-  //   let fechaHoy = new Date().toISOString().slice(0, 10);
+  // // Trae los que ya fueron notificados hoy
+  app.route("/api/Clientes_auditoriaNotificados").get((req, res) => {
+    // Fecha de hoy 2022-02-30
+    let fechaHoy = new Date().toISOString().slice(0, 10);
 
-  //   Clientes_auditoria.count({
-  //     where: {
-  //       [Op.and]: [
-  //         { estado_envio: 1 },
-  //         {
-  //           updatedAt: {
-  //             [Op.between]: [fechaHoy + " 00:00:00", fechaHoy + " 23:59:59"],
-  //           },
-  //         },
-  //       ],
-  //     },
-  //     //order: [["FECHA_CREACION", "DESC"]],
-  //   })
-  //     .then((result) => res.json(result))
-  //     .catch((error) => {
-  //       res.status(402).json({
-  //         msg: error.menssage,
-  //       });
-  //     });
-  // });
+    Clientes_auditoria.count({
+      where: {
+        [Op.and]: [
+          { estado_envio: 1 },
+          {
+            updatedAt: {
+              [Op.between]: [fechaHoy + " 00:00:00", fechaHoy + " 23:59:59"],
+            },
+          },
+        ],
+      },
+      //order: [["FECHA_CREACION", "DESC"]],
+    })
+      .then((result) => res.json(result))
+      .catch((error) => {
+        res.status(402).json({
+          msg: error.menssage,
+        });
+      });
+  });
 
   // // Trae la cantidad de turnos enviados por rango de fecha desde hasta
   // app.route("/Clientes_auditoriaNotificadosFecha").post((req, res) => {

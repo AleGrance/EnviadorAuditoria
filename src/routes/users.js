@@ -5,7 +5,7 @@ module.exports = (app) => {
   const Users = app.db.models.Users;
 
   app
-    .route("/users")
+    .route("/api/users")
     .get((req, res) => {
       if (!req.headers.apikey) {
         return res.status(403).send({
