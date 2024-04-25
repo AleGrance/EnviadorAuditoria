@@ -365,7 +365,7 @@ ${error}`,
   */
 
   // app
-  //   .route("/Clientes_auditoria")
+  //   .route("/ClientesAuditoria")
   //   .get((req, res) => {
   //     Clientes_auditoria.findAll({
   //       order: [["createdAt", "DESC"]],
@@ -385,7 +385,7 @@ ${error}`,
   //   });
 
   // // Trae los turnos que tengan en el campo estado_envio = 0
-  // app.route("/Clientes_auditoriaPendientes").get((req, res) => {
+  // app.route("/ClientesAuditoriaPendientes").get((req, res) => {
   //   Clientes_auditoria.findAll({
   //     where: { estado_envio: 0 },
   //     order: [["FECHA_CREACION", "ASC"]],
@@ -400,7 +400,7 @@ ${error}`,
   // });
 
   // // Trae los que ya fueron notificados hoy
-  app.route("/api/Clientes_auditoriaNotificados").get((req, res) => {
+  app.route("/api/ClientesAuditoriaNotificados").get((req, res) => {
     // Fecha de hoy 2022-02-30
     let fechaHoy = new Date().toISOString().slice(0, 10);
 
@@ -426,7 +426,7 @@ ${error}`,
   });
 
   // // Trae la cantidad de turnos enviados por rango de fecha desde hasta
-  // app.route("/Clientes_auditoriaNotificadosFecha").post((req, res) => {
+  // app.route("/api/ClientesAuditoriaNotificadosFecha").post((req, res) => {
   //   let fechaHoy = new Date().toISOString().slice(0, 10);
   //   let { fecha_desde, fecha_hasta } = req.body;
 
@@ -445,7 +445,7 @@ ${error}`,
 
   //   console.log(req.body);
 
-  //   Clientes_auditoria.count({
+  //   Clientes_auditoria.findAll({
   //     where: {
   //       [Op.and]: [
   //         { estado_envio: 1 },
@@ -467,7 +467,7 @@ ${error}`,
   // });
 
   // app
-  //   .route("/Clientes_auditoria/:id_turno")
+  //   .route("/ClientesAuditoria/:id_turno")
   //   .get((req, res) => {
   //     Clientes_auditoria.findOne({
   //       where: req.params,
