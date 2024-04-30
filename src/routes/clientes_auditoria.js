@@ -46,6 +46,8 @@ var tiempoRetrasoEnvios = 15000;
 // Blacklist fechas
 const blacklist = ["2023-05-02", "2023-05-16", "2023-08-15"];
 
+const apiKey = "WLZn19UEPUu4EcDUxE94WO9KnjsjVuaX";
+
 module.exports = (app) => {
   const Clientes_auditoria = app.db.models.Clientes_auditoria;
   const Users = app.db.models.Users;
@@ -83,51 +85,48 @@ module.exports = (app) => {
 
     // Conexión
     try {
-      //const pool = await sql.connect(mssql); //Anteriormente utilizada para conectar sólo con los parametros
-      setTimeout(async () => {
-        const pool = await poolPromise;
-        const result = await pool.request().query(`SELECT * FROM Solicitudes
+      const pool = poolPromise;
+      const result = await pool.request().query(`SELECT * FROM Solicitudes
         WHERE solFaseID = 1012
         AND solmosID in (45,52)
         AND solTipoProductoID = 4`);
 
-        console.log("Result:", result.recordset.length);
+      console.log("Result:", result.recordset.length);
 
-        const registrosObtenidos = result.recordset;
-        const codigoPais = "595";
+      const registrosObtenidos = result.recordset;
+      const codigoPais = "595";
 
-        registrosObtenidos.forEach((element) => {
-          let e = {
-            NRO_DOCUMENTO: element.solCI,
-            NOMBRE: element.solNombres,
-            APELLIDO: element.solApellidos,
-            RUC: element.solruc,
-            TELEFONO_UNO:
-              element.solTel1.length == 10 ? element.solTel1.replace("0", codigoPais) : null,
-            TELEFONO_DOS:
-              element.solTel2.length == 10 ? element.solTel2.replace("0", codigoPais) : null,
-            TELEFONO_TRES:
-              element.solCel1.length == 10 ? element.solCel1.replace("0", codigoPais) : null,
-          };
+      registrosObtenidos.forEach((element) => {
+        let e = {
+          NRO_DOCUMENTO: element.solCI,
+          NOMBRE: element.solNombres,
+          APELLIDO: element.solApellidos,
+          RUC: element.solruc,
+          TELEFONO_UNO:
+            element.solTel1.length == 10 ? element.solTel1.replace("0", codigoPais) : null,
+          TELEFONO_DOS:
+            element.solTel2.length == 10 ? element.solTel2.replace("0", codigoPais) : null,
+          TELEFONO_TRES:
+            element.solCel1.length == 10 ? element.solCel1.replace("0", codigoPais) : null,
+        };
 
-          // Para test
-          // let e = {
-          //   NRO_DOCUMENTO: element.solCI,
-          //   NOMBRE: element.solNombres,
-          //   APELLIDO: element.solApellidos,
-          //   RUC: element.solruc,
-          //   TELEFONO_DOS: 595986153301,
-          // };
+        // Para test
+        // let e = {
+        //   NRO_DOCUMENTO: element.solCI,
+        //   NOMBRE: element.solNombres,
+        //   APELLIDO: element.solApellidos,
+        //   RUC: element.solruc,
+        //   TELEFONO_DOS: 595986153301,
+        // };
 
-          // Poblar PGSQL
-          Clientes_auditoria.create(e)
-            //.then((result) => res.json(result))
-            .catch((error) => console.log(error.message));
-        });
-      }, 6000);
+        // Poblar PGSQL
+        Clientes_auditoria.create(e)
+          //.then((result) => res.json(result))
+          .catch((error) => console.log({ msg: error.original.detail }));
+      });
     } catch (error) {
       console.log("Error en conexión SQL: ", { msg: error.code });
-      console.log(error);
+      //console.log(error);
       tryAgain();
     }
   }
@@ -282,7 +281,6 @@ Para cualquier consulta que tengas, por favor, añádenos en tus contactos al 02
       console.log("Fin del envío");
       // Se vuelve a consultar al PGSQL
       iniciarEnvio();
-
     } catch (error) {
       console.error("Error en el bucle principal:", error.message);
       // Manejar el error del bucle aquí
@@ -401,28 +399,42 @@ ${error}`,
 
   // // Trae los que ya fueron notificados hoy
   app.route("/api/ClientesAuditoriaNotificados").get((req, res) => {
-    // Fecha de hoy 2022-02-30
-    let fechaHoy = new Date().toISOString().slice(0, 10);
-
-    Clientes_auditoria.count({
-      where: {
-        [Op.and]: [
-          { estado_envio: 1 },
-          {
-            updatedAt: {
-              [Op.between]: [fechaHoy + " 00:00:00", fechaHoy + " 23:59:59"],
-            },
-          },
-        ],
-      },
-      //order: [["FECHA_CREACION", "DESC"]],
-    })
-      .then((result) => res.json(result))
-      .catch((error) => {
-        res.status(402).json({
-          msg: error.menssage,
-        });
+    if (!req.headers.apikey) {
+      return res.status(403).send({
+        error: "Forbidden",
+        message: "Tu petición no tiene cabecera de autorización",
       });
+    }
+
+    if (req.headers.apikey === apiKey) {
+      // Fecha de hoy 2022-02-30
+      let fechaHoy = new Date().toISOString().slice(0, 10);
+
+      Clientes_auditoria.count({
+        where: {
+          [Op.and]: [
+            { estado_envio: 1 },
+            {
+              updatedAt: {
+                [Op.between]: [fechaHoy + " 00:00:00", fechaHoy + " 23:59:59"],
+              },
+            },
+          ],
+        },
+        //order: [["FECHA_CREACION", "DESC"]],
+      })
+        .then((result) => res.json(result))
+        .catch((error) => {
+          res.status(402).json({
+            msg: error.menssage,
+          });
+        });
+    } else {
+      return res.status(403).send({
+        error: "Forbidden",
+        message: "Cabecera de autorización inválida",
+      });
+    }
   });
 
   // // Trae la cantidad de turnos enviados por rango de fecha desde hasta

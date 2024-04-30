@@ -28,7 +28,7 @@ const mssql = {
   options: {
     encrypt: true, // for azure
     trustServerCertificate: true, // change to true for local dev / self-signed certs
-    instanceName: process.env.MSQL_INST
+    instanceName: process.env.MSQL_INST,
   },
 };
 
@@ -40,7 +40,7 @@ async function connectWithRetry() {
       console.log("Conexión exitosa a la base de datos");
       return poolPromise;
     } catch (err) {
-      console.error("Error al conectar a la base de datos:", {error: err.message});
+      console.error("Error al conectar a la base de datos:", { error: err.message });
       console.log("Reintentando conexión en 10 segundos...");
       await new Promise((resolve) => setTimeout(resolve, 10000)); // Esperar 1 minuto antes de reintentar
     }
@@ -53,4 +53,4 @@ connectWithRetry().catch((err) => {
   process.exit(1); // Salir de la aplicación en caso de error grave
 });
 
-export {postgres, mssql, poolPromise}
+export { postgres, mssql, poolPromise };
