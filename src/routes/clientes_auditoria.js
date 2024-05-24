@@ -20,24 +20,6 @@ let fileBase64Media = "";
 // Mensaje del notificador
 let mensajeBody = "";
 
-// Ruta de la imagen JPEG
-//const imagePath = path.join(__dirname, "..", "img", "img.jpeg");
-// Leer el contenido de la imagen como un buffer
-//const imageBuffer = fs.readFileSync(imagePath);
-// Convertir el buffer a base64
-//const base64String = imageBuffer.toString("base64");
-// Mapear la extensión de archivo a un tipo de archivo
-//const fileExtension = path.extname(imagePath);
-// const fileType = {
-//   ".jpg": "image/jpeg",
-//   ".jpeg": "image/jpeg",
-//   ".png": "image/png",
-// }[fileExtension.toLowerCase()];
-
-//fileMimeTypeMedia = fileType;
-// El split esta al pedo
-//fileBase64Media = base64String.split(",")[0];
-
 // Tiempo de retraso de consulta al PGSQL para iniciar el envio. 1 minuto
 var tiempoRetrasoPGSQL = 1000 * 60;
 // Tiempo entre envios. Cada 15s se realiza el envío a la API free WWA
@@ -131,7 +113,10 @@ module.exports = (app) => {
     }
   }
 
-  //injeccionMsql();
+  // Para test de la insersión directa
+  // setTimeout(() => {
+  //   injeccionMsql();
+  // }, 10000);
 
   // Inicia los envios - Consulta al PGSQL
   let losRegistros = [];
