@@ -298,7 +298,6 @@ Para cualquier consulta que tengas, por favor, añádenos en tus contactos al 02
   let numerosNotificados = [
     { NOMBRE: "Alejandro", NUMERO: "595986153301" },
     { NOMBRE: "Alejandro Corpo", NUMERO: "595974107341" },
-    //{ NOMBRE: "Juan Corpo", NUMERO: "595991711570" },
   ];
 
   async function notificarSesionOff(error) {

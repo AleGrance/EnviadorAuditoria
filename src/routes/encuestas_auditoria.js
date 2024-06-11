@@ -1,5 +1,6 @@
 const cron = require("node-cron");
 const { Op, where } = require("sequelize");
+const Sequelize = require("sequelize");
 const apiKey = "WLZn19UEPUu4EcDUxE94WO9KnjsjVuaX";
 const moment = require("moment");
 
@@ -31,7 +32,7 @@ module.exports = (app) => {
               model: Clientes_auditoria,
             },
           ],
-          order: [['createdAt', 'DESC']]
+          order: [["createdAt", "DESC"]],
         })
           .then((result) => res.json(result))
           .catch((error) => {
@@ -140,7 +141,10 @@ module.exports = (app) => {
       Encuestas_auditoria.findAll({
         where: {
           createdAt: {
-            [Op.between]: [fecha_desde + " 00:00:00", fecha_hasta + " 23:59:59"],
+            [Op.between]: [
+              fecha_desde + " 00:00:00",
+              fecha_hasta + " 23:59:59",
+            ],
           },
         },
         include: [
@@ -181,4 +185,67 @@ module.exports = (app) => {
   //       });
   //     });
   // });
+
+  // PAGINATION
+  app.route("/api/Encuestas_auditoriaFiltered").post((req, res) => {
+    var search_keyword = req.body.search.value
+      .replace(/[^a-zA-Z 0-9.]+/g, "")
+      .split(" ");
+
+    return Encuestas_auditoria.count().then((counts) => {
+      var condition = [];
+
+      for (var searchable of search_keyword) {
+        if (searchable !== "") {
+          condition.push({
+            pregunta1: {
+              [Sequelize.Op.iLike]: `%${searchable}%`,
+            },
+          });
+        }
+      }
+
+      var result = {
+        data: [],
+        recordsTotal: 0,
+        recordsFiltered: 0,
+      };
+
+      if (!counts) {
+        return res.json(result);
+      }
+
+      result.recordsTotal = counts;
+
+      Encuestas_auditoria.findAndCountAll({
+        offset: req.body.start,
+        limit: req.body.length,
+        where: {
+          [Sequelize.Op.or]:
+            condition.length > 0
+              ? condition
+              : [{ pregunta1: { [Sequelize.Op.iLike]: "%%" } }],
+        },
+        include: [
+          {
+            model: Clientes_auditoria,
+            attributes: [
+              "NOMBRE",
+              "APELLIDO",
+            ],
+          },
+        ],
+        order: [["id_Encuestas_auditoria", "DESC"]],
+      })
+        .then((response) => {
+          result.recordsFiltered = response.count;
+          result.data = response.rows;
+          res.json(result);
+        })
+        .catch((err) => {
+          console.error(err);
+          res.status(500).json({ error: "Internal server error" });
+        });
+    });
+  });
 };
