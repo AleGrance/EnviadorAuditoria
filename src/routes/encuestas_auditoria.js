@@ -188,64 +188,75 @@ module.exports = (app) => {
 
   // PAGINATION
   app.route("/api/Encuestas_auditoriaFiltered").post((req, res) => {
-    var search_keyword = req.body.search.value
-      .replace(/[^a-zA-Z 0-9.]+/g, "")
-      .split(" ");
+    if (!req.headers.apikey) {
+      return res.status(403).send({
+        error: "Forbidden",
+        message: "Tu petición no tiene cabecera de autorización",
+      });
+    }
 
-    return Encuestas_auditoria.count().then((counts) => {
-      var condition = [];
+    if (req.headers.apikey === apiKey) {
+      var search_keyword = req.body.search.value
+        .replace(/[^a-zA-Z 0-9.]+/g, "")
+        .split(" ");
 
-      for (var searchable of search_keyword) {
-        if (searchable !== "") {
-          condition.push({
-            pregunta1: {
-              [Sequelize.Op.iLike]: `%${searchable}%`,
-            },
-          });
+      return Encuestas_auditoria.count().then((counts) => {
+        var condition = [];
+
+        for (var searchable of search_keyword) {
+          if (searchable !== "") {
+            condition.push({
+              pregunta1: {
+                [Sequelize.Op.iLike]: `%${searchable}%`,
+              },
+            });
+          }
         }
-      }
 
-      var result = {
-        data: [],
-        recordsTotal: 0,
-        recordsFiltered: 0,
-      };
+        var result = {
+          data: [],
+          recordsTotal: 0,
+          recordsFiltered: 0,
+        };
 
-      if (!counts) {
-        return res.json(result);
-      }
+        if (!counts) {
+          return res.json(result);
+        }
 
-      result.recordsTotal = counts;
+        result.recordsTotal = counts;
 
-      Encuestas_auditoria.findAndCountAll({
-        offset: req.body.start,
-        limit: req.body.length,
-        where: {
-          [Sequelize.Op.or]:
-            condition.length > 0
-              ? condition
-              : [{ pregunta1: { [Sequelize.Op.iLike]: "%%" } }],
-        },
-        include: [
-          {
-            model: Clientes_auditoria,
-            attributes: [
-              "NOMBRE",
-              "APELLIDO",
-            ],
+        Encuestas_auditoria.findAndCountAll({
+          offset: req.body.start,
+          limit: req.body.length,
+          where: {
+            [Sequelize.Op.or]:
+              condition.length > 0
+                ? condition
+                : [{ pregunta1: { [Sequelize.Op.iLike]: "%%" } }],
           },
-        ],
-        order: [["id_Encuestas_auditoria", "DESC"]],
-      })
-        .then((response) => {
-          result.recordsFiltered = response.count;
-          result.data = response.rows;
-          res.json(result);
+          include: [
+            {
+              model: Clientes_auditoria,
+              attributes: ["NOMBRE", "APELLIDO"],
+            },
+          ],
+          order: [["id_Encuestas_auditoria", "DESC"]],
         })
-        .catch((err) => {
-          console.error(err);
-          res.status(500).json({ error: "Internal server error" });
-        });
-    });
+          .then((response) => {
+            result.recordsFiltered = response.count;
+            result.data = response.rows;
+            res.json(result);
+          })
+          .catch((err) => {
+            console.error(err);
+            res.status(500).json({ error: "Internal server error" });
+          });
+      });
+    } else {
+      return res.status(403).send({
+        error: "Forbidden",
+        message: "Cabecera de autorización inválida",
+      });
+    }
   });
 };
