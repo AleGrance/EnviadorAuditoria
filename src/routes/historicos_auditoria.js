@@ -1,6 +1,7 @@
 const cron = require("node-cron");
 const { Op } = require("sequelize");
 const apiKey = "WLZn19UEPUu4EcDUxE94WO9KnjsjVuaX";
+import moment from "moment";
 
 module.exports = (app) => {
   const Historicos_auditoria = app.db.models.Historicos_auditoria;
@@ -20,14 +21,22 @@ module.exports = (app) => {
     let fullHoraAhora = hoyAhora.toString().slice(16, 21);
 
     console.log("Hoy es:", diaHoy, "la hora es:", fullHoraAhora);
-    console.log("CRON: Se almacena el historico de los enviados hoy - auditoria");
+    console.log(
+      "CRON: Se almacena el historico de los enviados hoy - auditoria"
+    );
     cantidadEnviados();
   });
 
   async function cantidadEnviados() {
-    // Fecha de hoy 2022-02-30
-    let fechaHoy = new Date().toISOString().slice(0, 10);
-    historicoObj.fecha = fechaHoy;
+    // Fecha de hoy
+    let fechaHoy = moment();
+    // Se resta un DIA porque se ejecuta a las 20:30 y ???? esta tomando la hora + 04:00
+    // Faltaria ver porque y o corregir para que tome la hora local
+    let fechaAyer = fechaHoy.subtract(1, "days");
+    let fechaAyerFormated = fechaAyer.format("YYYY-MM-DD");
+
+    // La fecha con el dia restado
+    historicoObj.fecha = fechaAyerFormated;
 
     historicoObj.cant_enviados = await Clientes_auditoria.count({
       where: {
@@ -35,7 +44,7 @@ module.exports = (app) => {
           { estado_envio: 1 },
           {
             updatedAt: {
-              [Op.between]: [fechaHoy + " 00:00:00", fechaHoy + " 23:59:59"],
+              [Op.between]: [fechaAyerFormated + " 00:00:00", fechaAyerFormated + " 23:59:59"],
             },
           },
         ],
@@ -48,7 +57,7 @@ module.exports = (app) => {
           { estado_envio: { [Op.ne]: 1 } },
           {
             updatedAt: {
-              [Op.between]: [fechaHoy + " 00:00:00", fechaHoy + " 23:59:59"],
+              [Op.between]: [fechaAyerFormated + " 00:00:00", fechaAyerFormated + " 23:59:59"],
             },
           },
         ],
@@ -119,7 +128,10 @@ module.exports = (app) => {
       Historicos_auditoria.findAll({
         where: {
           fecha: {
-            [Op.between]: [fecha_desde + " 00:00:00", fecha_hasta + " 23:59:59"],
+            [Op.between]: [
+              fecha_desde + " 00:00:00",
+              fecha_hasta + " 23:59:59",
+            ],
           },
         },
       })
