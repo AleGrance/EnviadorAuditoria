@@ -44,7 +44,9 @@ module.exports = (app) => {
     const now = new Date();
     const dateString = now.toISOString().split("T")[0];
     if (blacklist.includes(dateString)) {
-      console.log(`La fecha ${dateString} está en la blacklist y no se ejecutará la tarea.`);
+      console.log(
+        `La fecha ${dateString} está en la blacklist y no se ejecutará la tarea.`
+      );
       return;
     }
 
@@ -55,13 +57,15 @@ module.exports = (app) => {
 
   // Trae los datos del MSSQL - Intenta cada 1 min en caso de error de conexion
   function tryAgain() {
-    console.log("Error de conexion con el MSSQL, se intenta nuevamente luego de 1m...");
+    console.log(
+      "Error de conexion con el MSSQL, se intenta nuevamente luego de 1m..."
+    );
     setTimeout(() => {
       injeccionMsql();
     }, 1000 * 60);
   }
 
-  // Trae los datos del Firebird
+  // Trae los datos del MSSQL
   async function injeccionMsql() {
     console.log("Obteniendo los datos del MSSQL...");
 
@@ -85,11 +89,17 @@ module.exports = (app) => {
           APELLIDO: element.solApellidos,
           RUC: element.solruc,
           TELEFONO_UNO:
-            element.solTel1.length == 10 ? element.solTel1.replace("0", codigoPais) : null,
+            element.solTel1.length == 10
+              ? element.solTel1.replace("0", codigoPais)
+              : null,
           TELEFONO_DOS:
-            element.solTel2.length == 10 ? element.solTel2.replace("0", codigoPais) : null,
+            element.solTel2.length == 10
+              ? element.solTel2.replace("0", codigoPais)
+              : null,
           TELEFONO_TRES:
-            element.solCel1.length == 10 ? element.solCel1.replace("0", codigoPais) : null,
+            element.solCel1.length == 10
+              ? element.solCel1.replace("0", codigoPais)
+              : null,
         };
 
         // Para test
@@ -102,9 +112,11 @@ module.exports = (app) => {
         // };
 
         // Poblar PGSQL
-        Clientes_auditoria.create(e)
-          //.then((result) => res.json(result))
-          .catch((error) => console.log({ msg: error.original.detail }));
+        if (e.TELEFONO_UNO || e.TELEFONO_DOS || e.TELEFONO_TRES) {
+          Clientes_auditoria.create(e)
+            //.then((result) => res.json(result))
+            .catch((error) => console.log({ msg: error.original.detail }));
+        }
       });
     } catch (error) {
       console.log("Error en conexión SQL: ", { msg: error.code });
@@ -183,7 +195,9 @@ Para cualquier consulta que tengas, por favor, añádenos en tus contactos al 02
             fileSize: "",
           };
 
-          const response = await axios.post(wwaUrl, dataBody, { timeout: 1000 * 60 });
+          const response = await axios.post(wwaUrl, dataBody, {
+            timeout: 1000 * 60,
+          });
           // Procesar la respuesta aquí...
           const data = response.data;
 
@@ -230,14 +244,18 @@ Para cualquier consulta que tengas, por favor, añádenos en tus contactos al 02
               console.log("Error 104: ", errMsg);
               // Vacia el array de los turnos para no notificar por cada turno cada segundo
               losRegistros = [];
-              throw new Error(`Error en sesión en respuesta de la solicitud Axios - ${errMsg}`);
+              throw new Error(
+                `Error en sesión en respuesta de la solicitud Axios - ${errMsg}`
+              );
             }
             // Sesion cerrada o desvinculada. Puede que se envie al abrir la sesion o al vincular
             if (errMsg === "Protocol error (R") {
               console.log("Error 105: ", errMsg);
               // Vacia el array de los turnos para no notificar por cada turno cada segundo
               losRegistros = [];
-              throw new Error(`Error en sesión en respuesta de la solicitud Axios - ${errMsg}`);
+              throw new Error(
+                `Error en sesión en respuesta de la solicitud Axios - ${errMsg}`
+              );
             }
             // El numero esta mal escrito o supera los 12 caracteres
             if (errMsg === "Evaluation failed") {
@@ -249,7 +267,10 @@ Para cualquier consulta que tengas, por favor, añádenos en tus contactos al 02
           console.log(error);
           // Manejo de errores aquí...
           if (error.code === "ECONNABORTED") {
-            console.error("La solicitud tardó demasiado y se canceló", error.code);
+            console.error(
+              "La solicitud tardó demasiado y se canceló",
+              error.code
+            );
             notificarSesionOff("Error02 de conexión con la API: " + error.code);
           } else {
             console.error("Error de conexión con la API: ", error.code);
@@ -257,7 +278,9 @@ Para cualquier consulta que tengas, por favor, añádenos en tus contactos al 02
           }
           // Lanzar una excepción para detener el bucle
           losRegistros = [];
-          throw new Error(`"Error de conexión en la solicitud Axios - ${error.code}`);
+          throw new Error(
+            `"Error de conexión en la solicitud Axios - ${error.code}`
+          );
         }
 
         // Esperar 15 segundos antes de la próxima iteración
@@ -330,7 +353,10 @@ ${error}`,
           }
         })
         .catch((error) => {
-          console.error("**Ocurrió un error - Notificacion de ERROR No enviado:", error.code);
+          console.error(
+            "**Ocurrió un error - Notificacion de ERROR No enviado:",
+            error.code
+          );
           console.log("**Verificar la sesion local: " + wwaUrl_Notificacion);
         });
 
